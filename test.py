@@ -1,41 +1,27 @@
-import torch
-import torchvision
-from torchvision.transforms import transforms
-import matplotlib.pyplot as plt
+from torch.utils.data import Dataset, DataLoader
 
-batch_size = 4
-root = "./cache"
 
-my_transform = transforms.Compose([transforms.ToTensor(),
-                                   transforms.Normalize(mean=[0.5],  # mean=[0.485, 0.456, 0.406]
-                                                        std=[0.5])])  # std=[0.229, 0.224, 0.225]
+class MyDataset(Dataset):
+    def __init__(self, data, labels):
+        self.data = data
+        self.labels = labels
 
-train_dataset = torchvision.datasets.MNIST(root=root,
-                                           train=True,
-                                           transform=my_transform,
-                                           download=True)
+    def __len__(self):
+        return len(self.data)
 
-val_dataset = torchvision.datasets.MNIST(root=root,
-                                         train=False,
-                                         transform=my_transform,
-                                         download=True)
+    def __getitem__(self, index):
+        sample = self.data[index]
+        label = self.labels[index]
+        return sample, label
 
-train_loader = torch.utils.data.DataLoader(train_dataset,
-                                           batch_size=batch_size,
-                                           shuffle=True)
 
-print(len(train_dataset))
-print(len(train_loader))
+# 假设有一些样本数据
+data = [(1, 0), (2, 1), (3, 0), (4, 1), (5, 1)]
+labels = [0, 1, 1, 2, 0]
 
-iterator = iter(train_loader)
-image, label = next(iterator)
-print(image.shape)
-print(label)
+# 创建 Dataset 和 DataLoader
+dataset = MyDataset(data, labels)
+dataloader = DataLoader(dataset, batch_size=2, shuffle=True)
 
-for i in range(batch_size):
-    plt.subplot(1, batch_size, i + 1)
-    plt.title(label[i].item())
-    plt.axis("off")
-    plt.imshow(image[i].permute(1, 2, 0))
-
-plt.show()
+dataloader = iter(dataloader)
+print(next(dataloader))  # [[tensor([5, 3]), tensor([1, 0])], tensor([0, 1])]
